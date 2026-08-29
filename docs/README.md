@@ -6,3 +6,6 @@
 - [Codex Partner 产品路线图](planning/2026-08-29-001-codex-partner-roadmap.md)
 - [上下文引入 v1 需求](requirements/2026-08-29-001-context-import-v1.md)
 - [上下文 Composer 概要设计](architecture/2026-08-29-002-context-composer.md)
+- [轻量上下文引用需求](requirements/2026-08-29-002-lightweight-context-reference.md)
+- [轻量上下文引用概要设计](architecture/2026-08-29-003-lightweight-context-reference.md)
+- [轻量上下文引用人工验收](testing/2026-08-29-002-lightweight-context-reference.md)

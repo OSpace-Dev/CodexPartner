@@ -1,39 +1,32 @@
 # Codex Partner
 
-Codex Partner is a minimal VS Code extension prototype that talks to the local Codex App Server over stdio JSONL.
+Codex Partner 是一个轻量 VS Code 扩展：把当前工作区中的文件、目录或选中文本快速转换成可粘贴到官方 Codex VS Code 扩展聊天框的上下文引用。
 
-## Current scope
+## 当前范围
 
-- Lists visible Codex threads.
-- Reads the selected thread history.
-- Creates a new durable thread when requested.
-- Sends text with `turn/start`.
-- Renders streamed `item/agentMessage/delta` feedback.
-- Adds selected editor ranges to the Composer as removable inline context bubbles at the last cursor position.
-- Sends context as a compatible text prompt containing workspace-relative file paths and line ranges.
+- 选中文本后，通过编辑器右键菜单或灯泡 Code Action 复制“文件 + 行号范围”引用。
+- 在资源管理器中，通过右键菜单复制文件引用或目录引用。
+- 引用只使用工作区相对路径，不复制选中的完整内容，不读取 Codex 登录态。
+- 生成结果自动写入系统剪贴板，官方 Codex 扩展继续负责会话、模型、消息展示和审批。
 
-The extension does not read VS Code cookies, desktop-app storage, or private login tokens. It delegates authentication and account access to the local Codex CLI process.
+## 生成格式
 
-## Run in VS Code
+```text
+【文件 `src/extension.js`，第 12-15 行】
+【文件 `README.md`】
+【目录 `src/components`】
+```
 
-1. Open this folder in VS Code.
-2. Press `F5` and choose `Run Codex Partner` to launch an Extension Development Host. The development extension is loaded in the new window, not in the original window.
-3. In the new window, open the `Codex Partner` activity bar view.
-4. Select a conversation or create a new one, then send a message.
-5. In any saved-file editor, place the Composer caret where the reference should go, select text, and click the lightbulb or press `Ctrl+.`; choose `添加到 Codex Partner 对话`. The reference is inserted as an inline bubble at that caret position. The right-click command remains available as a fallback.
+## 在 VS Code 中运行
 
-Closing VS Code also closes the Extension Development Host. The next time, reopen the project folder and press `F5` again; opening the project in a normal VS Code window alone does not install or activate this working-copy extension.
+1. 在 VS Code 中打开本仓库根目录。
+2. 按 `F5`，选择 `Run Codex Partner`，启动 Extension Development Host。
+3. 在编辑器中选择文本，点击灯泡或右键选择“复制 Codex 文件行号引用”。
+4. 在资源管理器中右键点击文件或目录，选择对应的复制命令。
+5. 将剪贴板内容粘贴到官方 Codex 扩展的聊天框中。
 
-## Codex executable resolution
+关闭 VS Code 后，下一次重新打开本仓库并按 `F5` 即可再次加载开发中的扩展。
 
-The extension checks, in order:
+## 验证
 
-1. `codexPartner.codexCliPath`.
-2. `CODEX_CLI_PATH`.
-3. The active official `openai.chatgpt` extension's bundled executable.
-4. An installed official extension under the normal VS Code extensions directory.
-5. `codex.exe` or `codex` on `PATH`.
-
-## Verification
-
-Run `npm run check` for JavaScript syntax checks. Run `npm run probe` for the read-only App Server probe; pass `--codex <path>` when Codex is not on `PATH`.
+运行 `npm run check` 执行 JavaScript 语法检查和引用格式单元测试。
