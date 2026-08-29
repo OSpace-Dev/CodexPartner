@@ -9,7 +9,8 @@ Codex Partner is a minimal VS Code extension prototype that talks to the local C
 - Creates a new durable thread when requested.
 - Sends text with `turn/start`.
 - Renders streamed `item/agentMessage/delta` feedback.
-- Adds a selected editor range to the chat as a workspace-relative file and line reference.
+- Adds selected editor ranges to the Composer as removable inline context bubbles at the last cursor position.
+- Sends context as a compatible text prompt containing workspace-relative file paths and line ranges.
 
 The extension does not read VS Code cookies, desktop-app storage, or private login tokens. It delegates authentication and account access to the local Codex CLI process.
 
@@ -19,7 +20,7 @@ The extension does not read VS Code cookies, desktop-app storage, or private log
 2. Press `F5` and choose `Run Codex Partner` to launch an Extension Development Host. The development extension is loaded in the new window, not in the original window.
 3. In the new window, open the `Codex Partner` activity bar view.
 4. Select a conversation or create a new one, then send a message.
-5. In any saved-file editor, select text and click the lightbulb or press `Ctrl+.`; choose `添加到 Codex Partner 对话`. The reference is inserted at the current composer cursor position. The right-click command remains available as a fallback.
+5. In any saved-file editor, place the Composer caret where the reference should go, select text, and click the lightbulb or press `Ctrl+.`; choose `添加到 Codex Partner 对话`. The reference is inserted as an inline bubble at that caret position. The right-click command remains available as a fallback.
 
 Closing VS Code also closes the Extension Development Host. The next time, reopen the project folder and press `F5` again; opening the project in a normal VS Code window alone does not install or activate this working-copy extension.
 

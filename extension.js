@@ -1,6 +1,7 @@
 const vscode = require("vscode");
 const { AppServerClient, resolveCodexExecutable } = require("./src/app-server-client");
-const { createSelectionReference, getSelectionLineRange } = require("./src/editor-reference");
+const { getSelectionLineRange } = require("./src/editor-reference");
+const { createFileRangeContext, normalizeComposerBlocks, serializeComposerBlocks } = require("./src/context-item");
 
 const addSelectionToChatTitle = "添加到 Codex Partner 对话";
 
@@ -51,7 +52,7 @@ class CodexSidebarProvider {
     this.busy = false;
     this.error = null;
     this.streamingMessage = null;
-    this.pendingComposerInsert = "";
+    this.pendingComposerContexts = [];
     this.composerReady = false;
     this.workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd();
   }
@@ -77,28 +78,27 @@ class CodexSidebarProvider {
       if (message.type === "refresh") return this.refresh();
       if (message.type === "selectThread") return this.selectThread(message.threadId);
       if (message.type === "newThread") return this.newThread();
-      if (message.type === "send") return this.send(message.text);
+      if (message.type === "send") return this.send(message.blocks);
       if (message.type === "webviewReady") {
         this.composerReady = true;
-        return this.flushComposerInsert();
+        return this.flushComposerContexts();
       }
     } catch (error) {
       this.setError(error);
     }
   }
 
-  insertComposerText(text) {
-    const value = String(text ?? "");
-    if (!value) return;
-    this.pendingComposerInsert += value;
-    this.flushComposerInsert();
+  insertComposerContext(contextItem) {
+    if (!contextItem) return;
+    this.pendingComposerContexts.push(contextItem);
+    this.flushComposerContexts();
   }
 
-  flushComposerInsert() {
-    if (!this.view || !this.composerReady || !this.pendingComposerInsert) return;
-    const text = this.pendingComposerInsert;
-    this.pendingComposerInsert = "";
-    void this.view.webview.postMessage({ type: "insertComposerText", text });
+  flushComposerContexts() {
+    if (!this.view || !this.composerReady || this.pendingComposerContexts.length === 0) return;
+    const contextItems = this.pendingComposerContexts;
+    this.pendingComposerContexts = [];
+    void this.view.webview.postMessage({ type: "addComposerContext", contextItems });
   }
 
   async refresh() {
@@ -173,9 +173,14 @@ class CodexSidebarProvider {
     }
   }
 
-  async send(text) {
-    const message = String(text ?? "").trim();
-    if (!message || this.busy) return;
+  async send(blocks) {
+    const normalizedBlocks = normalizeComposerBlocks(blocks);
+    if (!normalizedBlocks) throw new Error("One or more composer blocks are invalid.");
+    const serialized = serializeComposerBlocks(normalizedBlocks);
+    const hasMeaningfulContent = normalizedBlocks.some((block) => (
+      block.type === "context" || block.value.trim()
+    ));
+    if (!hasMeaningfulContent || this.busy) return;
     this.error = null;
     this.busy = true;
     this.streamingMessage = null;
@@ -184,20 +189,19 @@ class CodexSidebarProvider {
       await this.ensureClient();
       if (!this.selectedThreadId) await this.newThread();
       if (!this.selectedThreadId) throw new Error("No Codex thread is selected.");
-      this.history = [...this.history, { role: "user", text: message }];
-      this.busy = true;
+      this.history = [...this.history, { role: "user", blocks: normalizedBlocks, text: serialized }];
       this.pushState();
       await this.client.request("turn/start", {
         threadId: this.selectedThreadId,
-        input: [{ type: "text", text: message }],
+        input: [{ type: "text", text: serialized }],
       });
+      this.view?.webview.postMessage({ type: "clearComposer" });
     } catch (error) {
       this.setError(error);
       this.busy = false;
       this.pushState();
     }
   }
-
   async ensureClient() {
     if (this.client) return;
     const config = vscode.workspace.getConfiguration("codexPartner");
@@ -283,13 +287,14 @@ function getThreadList(result) {
   return result?.data ?? result?.threads ?? [];
 }
 
-function createReferenceFromDocumentRange(document, range) {
+function createContextItemFromDocumentRange(document, range) {
   const lineRange = getSelectionLineRange(range);
   if (!document || document.uri.scheme === "untitled" || !lineRange) return null;
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-  return createSelectionReference({
+  return createFileRangeContext({
     filePath: document.uri.fsPath,
     workspaceRoot: workspaceFolder?.uri.fsPath,
+    preview: document.getText(range),
     ...lineRange,
   });
 }
@@ -301,12 +306,12 @@ async function addSelectionToChat(provider, documentUri, selectionRange) {
       ? await vscode.workspace.openTextDocument(documentUri)
       : editor?.document;
     const range = selectionRange ?? editor?.selection;
-    const reference = createReferenceFromDocumentRange(document, range);
+    const reference = createContextItemFromDocumentRange(document, range);
     if (!reference) {
       vscode.window.showWarningMessage("请先在文件编辑器中选择一段内容。");
       return;
     }
-    provider.insertComposerText(`${reference}\n`);
+    provider.insertComposerContext(reference);
     await vscode.commands.executeCommand("workbench.view.extension.codexPartner");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -367,7 +372,7 @@ function renderHtml(webview, extensionUri) {
   <p id="error" class="error" role="alert" hidden></p>
   <form id="composer" class="composer">
     <label class="sr-only" for="prompt">Message Codex</label>
-    <textarea id="prompt" rows="3" placeholder="Message Codex..." spellcheck="true"></textarea>
+    <div id="prompt" class="prompt-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Message Codex" data-placeholder="Message Codex..."></div>
     <div class="composer-footer">
       <span id="status" class="status">Ready</span>
       <button id="send" class="send-button" type="submit">Send <span aria-hidden="true">&#8594;</span></button>

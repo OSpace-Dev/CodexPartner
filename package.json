@@ -86,7 +86,7 @@
     }
   },
   "scripts": {
-    "check": "node --check extension.js && node --check src/app-server-client.js && node --check src/editor-reference.js && node --check media/sidebar.js && node --test test/*.test.js",
+    "check": "node --check extension.js && node --check src/app-server-client.js && node --check src/editor-reference.js && node --check src/context-item.js && node --check media/sidebar.js && node --test test/*.test.js",
     "probe": "node scripts/codex-app-server-probe.mjs"
   }
 }
