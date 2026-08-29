@@ -1,0 +1,4 @@
+interface:
+  display_name: "交付规划"
+  short_description: "将已确认的需求范围拆分为有序、可执行、可验证的计划、里程碑和任务。"
+  default_prompt: "使用 $delivery-planning 将这个已确认需求拆分为计划、里程碑和任务。"

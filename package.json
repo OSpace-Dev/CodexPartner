@@ -1,0 +1,92 @@
+{
+  "name": "codex-partner",
+  "displayName": "Codex Partner",
+  "description": "A small VS Code client for the local Codex App Server.",
+  "version": "0.1.0",
+  "publisher": "local-development",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "activationEvents": [
+    "onView:codexPartner.sidebar",
+    "onCommand:codexPartner.addSelectionToChat",
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codexPartner.openSidebar",
+        "title": "Open Codex Partner",
+        "category": "Codex Partner"
+      },
+      {
+        "command": "codexPartner.refreshThreads",
+        "title": "Refresh Codex Threads",
+        "category": "Codex Partner"
+      },
+      {
+        "command": "codexPartner.addSelectionToChat",
+        "title": "添加到 Codex Partner 对话",
+        "category": "Codex Partner"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "codexPartner.addSelectionToChat",
+          "when": "editorHasSelection",
+          "group": "navigation@50"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codexPartner",
+          "title": "Codex Partner",
+          "icon": "$(comment-discussion)"
+        }
+      ]
+    },
+    "views": {
+      "codexPartner": [
+        {
+          "id": "codexPartner.sidebar",
+          "name": "Codex",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Codex Partner",
+      "properties": {
+        "codexPartner.codexCliPath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Optional path to a Codex CLI executable. If empty, use CODEX_CLI_PATH, the installed official extension, or codex on PATH.",
+          "scope": "application"
+        },
+        "codexPartner.threadLimit": {
+          "type": "integer",
+          "default": 50,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum number of visible Codex threads to load."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "check": "node --check extension.js && node --check src/app-server-client.js && node --check src/editor-reference.js && node --check media/sidebar.js && node --test test/*.test.js",
+    "probe": "node scripts/codex-app-server-probe.mjs"
+  }
+}

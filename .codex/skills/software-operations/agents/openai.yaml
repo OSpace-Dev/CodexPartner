@@ -1,0 +1,4 @@
+interface:
+  display_name: "软件运行维护"
+  short_description: "对已部署版本执行观察、维护、恢复和可追溯的运行操作。"
+  default_prompt: "使用 $software-operations 对这个已部署版本执行安全、可验证的运行维护。"

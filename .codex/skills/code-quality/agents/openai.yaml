@@ -1,0 +1,7 @@
+interface:
+  display_name: "代码质量"
+  short_description: "应用务实编码原则，识别影响正确性与维护性的代码坏味道。"
+  default_prompt: "使用 $code-quality 检查这次实现的代码质量和真实坏味道。"
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Codex 项目初始化"
+  short_description: "创建项目级 AGENTS.md、文档导航和可持续维护的协作规则。"
+  default_prompt: "使用 $codex-project-bootstrap 为这个仓库建立项目级 AGENTS.md 和文档结构。"
+
+policy:
+  allow_implicit_invocation: true

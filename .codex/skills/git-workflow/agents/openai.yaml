@@ -1,0 +1,7 @@
+interface:
+  display_name: "Git 工作流"
+  short_description: "安全管理多托管平台的仓库、分支、提交、推送和发布历史。"
+  default_prompt: "使用 $git-workflow 安全处理这个仓库的 Git 操作。"
+
+policy:
+  allow_implicit_invocation: true

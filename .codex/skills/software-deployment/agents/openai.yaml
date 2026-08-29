@@ -1,0 +1,4 @@
+interface:
+  display_name: "软件部署"
+  short_description: "选择部署策略，完成发布预检、执行、验证、记录和安全回退。"
+  default_prompt: "使用 $software-deployment 为这个已通过测试的版本准备安全、可回退的部署方案。"

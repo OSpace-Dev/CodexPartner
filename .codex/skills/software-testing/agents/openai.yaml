@@ -1,0 +1,4 @@
+interface:
+  display_name: "软件测试"
+  short_description: "设计自动化与人工结合的测试，并输出可执行的验收文档。"
+  default_prompt: "使用 $software-testing 为这个变更制定测试方案，并输出需要人工执行的验收步骤。"

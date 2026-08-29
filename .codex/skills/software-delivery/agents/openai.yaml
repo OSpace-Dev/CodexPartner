@@ -1,0 +1,4 @@
+interface:
+  display_name: "软件交付"
+  short_description: "先澄清需求，再形成可验证、可交付的软件变更范围。"
+  default_prompt: "使用 $software-delivery 先澄清这个想法，再形成可确认的需求简报。"
