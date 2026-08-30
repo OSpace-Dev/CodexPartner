@@ -10,6 +10,7 @@ const { getSelectionLineRange } = require("./src/editor-reference");
 const selectionCommand = "codexPartner.copySelectionReference";
 const fileCommand = "codexPartner.copyFileReference";
 const directoryCommand = "codexPartner.copyDirectoryReference";
+const keybindingsCommand = "codexPartner.openKeybindings";
 
 function activate(context) {
   context.subscriptions.push(
@@ -27,7 +28,22 @@ function activate(context) {
     vscode.commands.registerCommand(directoryCommand, (resourceUri) => (
       copyDirectoryReference(resourceUri)
     )),
+    vscode.commands.registerCommand(keybindingsCommand, () => (
+      openKeybindingsSettings()
+    )),
   );
+}
+
+async function openKeybindingsSettings() {
+  try {
+    await vscode.commands.executeCommand(
+      "workbench.action.openGlobalKeybindings",
+      "Codex Partner",
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    vscode.window.showErrorMessage(`无法打开 Codex Partner 快捷键设置：${message}`);
+  }
 }
 
 class SelectionReferenceCodeActionProvider {
@@ -144,4 +160,5 @@ module.exports = {
   copyFileReference,
   copySelectionReference,
   formatReferenceForUri,
+  openKeybindingsSettings,
 };

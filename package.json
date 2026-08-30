@@ -2,9 +2,24 @@
   "name": "codex-partner",
   "displayName": "Codex Partner",
   "description": "Generate workspace file and line references for pasting into the official Codex VS Code extension.",
-  "version": "0.2.0",
-  "publisher": "local-development",
+  "version": "0.3.0",
+  "publisher": "OSpace-Dev",
   "license": "MIT",
+  "homepage": "https://github.com/OSpace-Dev/CodexPartner#readme",
+  "bugs": {
+    "url": "https://github.com/OSpace-Dev/CodexPartner/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OSpace-Dev/CodexPartner.git"
+  },
+  "keywords": [
+    "codex",
+    "context",
+    "reference",
+    "productivity",
+    "developer-tools"
+  ],
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -14,7 +29,8 @@
   "activationEvents": [
     "onCommand:codexPartner.copySelectionReference",
     "onCommand:codexPartner.copyFileReference",
-    "onCommand:codexPartner.copyDirectoryReference"
+    "onCommand:codexPartner.copyDirectoryReference",
+    "onCommand:codexPartner.openKeybindings"
   ],
   "main": "./extension.js",
   "contributes": {
@@ -33,6 +49,23 @@
         "command": "codexPartner.copyDirectoryReference",
         "title": "复制 Codex 目录引用",
         "category": "Codex Partner"
+      },
+      {
+        "command": "codexPartner.openKeybindings",
+        "title": "打开 Codex Partner 快捷键设置",
+        "category": "Codex Partner"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "codexPartner.copySelectionReference",
+        "key": "ctrl+alt+c",
+        "when": "editorTextFocus && editorHasSelection && resourceScheme == file"
+      },
+      {
+        "command": "codexPartner.copyFileReference",
+        "key": "ctrl+alt+f",
+        "when": "editorTextFocus && !editorHasSelection && resourceScheme == file"
       }
     ],
     "menus": {

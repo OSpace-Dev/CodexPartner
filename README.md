@@ -1,5 +1,7 @@
 # Codex Partner
 
+Codex Partner is a lightweight VS Code extension that turns workspace files, directories, and selected text into context references you can paste into the official Codex VS Code extension chat.
+
 Codex Partner 是一个轻量 VS Code 扩展：把当前工作区中的文件、目录或选中文本快速转换成可粘贴到官方 Codex VS Code 扩展聊天框的上下文引用。
 
 ## 当前范围
@@ -26,6 +28,15 @@ Codex Partner 是一个轻量 VS Code 扩展：把当前工作区中的文件、
 5. 将剪贴板内容粘贴到官方 Codex 扩展的聊天框中。
 
 关闭 VS Code 后，下一次重新打开本仓库并按 `F5` 即可再次加载开发中的扩展。
+
+## 快捷键
+
+- `Ctrl+Alt+C`：在编辑器中有文本选区时，复制选区的文件行号引用。
+- `Ctrl+Alt+F`：在编辑器中没有文本选区时，复制当前文件引用。
+- 目录引用继续使用资源管理器右键菜单，因为目录命令需要明确的目录目标。
+
+可以在 VS Code 的“键盘快捷方式”中搜索 `Codex Partner`，修改或禁用这些默认快捷键。
+也可以在命令面板中执行“Codex Partner: 打开 Codex Partner 快捷键设置”，直接打开已筛选的设置页面。
 
 ## 验证
 
