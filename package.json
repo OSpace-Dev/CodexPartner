@@ -2,7 +2,8 @@
   "name": "codex-partner",
   "displayName": "Codex Partner",
   "description": "Generate workspace file and line references for pasting into the official Codex VS Code extension.",
-  "version": "0.3.0",
+  "version": "0.4.0",
+  "icon": "media/icon.png",
   "publisher": "OSpace-Dev",
   "license": "MIT",
   "homepage": "https://github.com/OSpace-Dev/CodexPartner#readme",
@@ -30,6 +31,7 @@
     "onCommand:codexPartner.copySelectionReference",
     "onCommand:codexPartner.copyFileReference",
     "onCommand:codexPartner.copyDirectoryReference",
+    "onCommand:codexPartner.searchAndCopyReference",
     "onCommand:codexPartner.openKeybindings"
   ],
   "main": "./extension.js",
@@ -51,6 +53,11 @@
         "category": "Codex Partner"
       },
       {
+        "command": "codexPartner.searchAndCopyReference",
+        "title": "搜索并复制引用",
+        "category": "Codex Partner"
+      },
+      {
         "command": "codexPartner.openKeybindings",
         "title": "打开 Codex Partner 快捷键设置",
         "category": "Codex Partner"
@@ -66,6 +73,10 @@
         "command": "codexPartner.copyFileReference",
         "key": "ctrl+alt+f",
         "when": "editorTextFocus && !editorHasSelection && resourceScheme == file"
+      },
+      {
+        "command": "codexPartner.searchAndCopyReference",
+        "key": "ctrl+alt+r"
       }
     ],
     "menus": {
@@ -91,6 +102,6 @@
     }
   },
   "scripts": {
-    "check": "node --check extension.js && node --check src/editor-reference.js && node --check src/reference-format.js && node --test test/*.test.js"
+    "check": "node --check extension.js && node --check src/editor-reference.js && node --check src/reference-format.js && node --check src/reference-search.js && node --test test/*.test.js"
   }
 }

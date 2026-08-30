@@ -6,11 +6,20 @@ const {
   formatFileRangeReference,
 } = require("./src/reference-format");
 const { getSelectionLineRange } = require("./src/editor-reference");
+const {
+  buildReferenceSearchEntries,
+  prioritizeReferenceEntries,
+  updateRecentReferenceKeys,
+} = require("./src/reference-search");
 
 const selectionCommand = "codexPartner.copySelectionReference";
 const fileCommand = "codexPartner.copyFileReference";
 const directoryCommand = "codexPartner.copyDirectoryReference";
+const searchCommand = "codexPartner.searchAndCopyReference";
 const keybindingsCommand = "codexPartner.openKeybindings";
+const recentReferencesStateKey = "codexPartner.recentReferences";
+const recentReferencesLimit = 10;
+const searchFileLimit = 50000;
 
 function activate(context) {
   context.subscriptions.push(
@@ -27,6 +36,9 @@ function activate(context) {
     )),
     vscode.commands.registerCommand(directoryCommand, (resourceUri) => (
       copyDirectoryReference(resourceUri)
+    )),
+    vscode.commands.registerCommand(searchCommand, () => (
+      searchAndCopyReference(context)
     )),
     vscode.commands.registerCommand(keybindingsCommand, () => (
       openKeybindingsSettings()
@@ -120,6 +132,93 @@ async function copyDirectoryReference(resourceUri) {
   }
 }
 
+async function searchAndCopyReference(context) {
+  try {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders?.length) {
+      throw new Error("请先打开一个 VS Code 工作区。");
+    }
+
+    const recentKeys = context.workspaceState.get(recentReferencesStateKey, []);
+    const selectedItem = await vscode.window.showQuickPick(
+      loadReferenceQuickPickItems(workspaceFolders, recentKeys),
+      {
+        matchOnDescription: true,
+        matchOnDetail: true,
+        placeHolder: "搜索工作区文件或目录",
+        title: "Codex Partner: 搜索并复制引用",
+      },
+    );
+    if (!selectedItem) return;
+
+    const text = selectedItem.entry.kind === "directory"
+      ? formatDirectoryReference(selectedItem.entry.referencePath)
+      : formatFileReference(selectedItem.entry.referencePath);
+    if (!text) throw new Error("无法生成所选资源的工作区引用。");
+
+    await copyReference(text);
+    await context.workspaceState.update(
+      recentReferencesStateKey,
+      updateRecentReferenceKeys(
+        recentKeys,
+        selectedItem.entry.key,
+        recentReferencesLimit,
+      ),
+    );
+  } catch (error) {
+    showReferenceError(error);
+  }
+}
+
+async function loadReferenceQuickPickItems(workspaceFolders, recentKeys) {
+  const fileUris = await vscode.workspace.findFiles(
+    "**/*",
+    undefined,
+    searchFileLimit,
+  );
+  const files = fileUris.flatMap((uri) => {
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
+    if (!workspaceFolder) return [];
+
+    const relativePath = getRelativeWorkspacePath(workspaceFolder, uri);
+    if (!relativePath) return [];
+
+    return [{
+      relativePath,
+      workspaceKey: `${workspaceFolder.index}:${workspaceFolder.name}`,
+      workspaceName: workspaceFolder.name,
+    }];
+  });
+  const entries = prioritizeReferenceEntries(
+    buildReferenceSearchEntries(files, {
+      multiRoot: workspaceFolders.length > 1,
+    }),
+    recentKeys,
+  );
+
+  if (!entries.length) {
+    throw new Error("当前工作区中没有可引用的文件或目录。");
+  }
+
+  return entries.map((entry) => ({
+    label: entry.label,
+    description: entry.description || undefined,
+    detail: `${entry.recent ? "最近引用 · " : ""}${entry.kind === "directory" ? "目录" : "文件"} · ${entry.referencePath}`,
+    iconPath: new vscode.ThemeIcon(entry.kind === "directory" ? "folder" : "file"),
+    entry,
+  }));
+}
+
+function getRelativeWorkspacePath(workspaceFolder, uri) {
+  const relativePath = workspaceFolder.uri.scheme === "file" && uri.scheme === "file"
+    ? nodePath.relative(workspaceFolder.uri.fsPath, uri.fsPath)
+    : nodePath.posix.relative(workspaceFolder.uri.path, uri.path);
+  if (!relativePath || relativePath.startsWith("..") || nodePath.isAbsolute(relativePath)) {
+    return null;
+  }
+  return relativePath.split(nodePath.sep).join("/");
+}
+
 function formatReferenceForUri(uri, formatter) {
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
   if (!workspaceFolder) {
@@ -161,4 +260,5 @@ module.exports = {
   copySelectionReference,
   formatReferenceForUri,
   openKeybindingsSettings,
+  searchAndCopyReference,
 };
