@@ -37,7 +37,10 @@ npx @vscode/vsce package
 3. 完成 Marketplace 认证后发布 `codex-partner-0.3.0.vsix`。
 4. 发布后从 Marketplace 页面确认安装、版本和 README 展示正常。
 
+## 当前状态
+
+GitHub 远端已配置为 `origin`，提交 `b0514fb` 已推送到 `lightweight-context-reference` 分支。
+
 ## 当前阻塞
 
 Marketplace Publisher 创建和发布认证依赖用户的微软账号权限，本次不在本地代替完成。
-GitHub SSH 认证当前返回 `Permission denied (publickey)`，需要用户确认该 SSH 公钥已添加到 GitHub 账号。
