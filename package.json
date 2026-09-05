@@ -1,8 +1,8 @@
 {
   "name": "codex-partner",
-  "displayName": "Codex Partner",
-  "description": "Generate workspace file and line references for pasting into the official Codex VS Code extension.",
-  "version": "0.4.0",
+  "displayName": "%codexPartner.displayName%",
+  "description": "%codexPartner.description%",
+  "version": "0.5.0",
   "icon": "media/icon.png",
   "publisher": "OSpace-Dev",
   "license": "MIT",
@@ -35,32 +35,33 @@
     "onCommand:codexPartner.openKeybindings"
   ],
   "main": "./extension.js",
+  "l10n": "./l10n",
   "contributes": {
     "commands": [
       {
         "command": "codexPartner.copySelectionReference",
-        "title": "复制 Codex 文件行号引用",
-        "category": "Codex Partner"
+        "title": "%codexPartner.commands.copySelectionReference%",
+        "category": "%codexPartner.category%"
       },
       {
         "command": "codexPartner.copyFileReference",
-        "title": "复制 Codex 文件引用",
-        "category": "Codex Partner"
+        "title": "%codexPartner.commands.copyFileReference%",
+        "category": "%codexPartner.category%"
       },
       {
         "command": "codexPartner.copyDirectoryReference",
-        "title": "复制 Codex 目录引用",
-        "category": "Codex Partner"
+        "title": "%codexPartner.commands.copyDirectoryReference%",
+        "category": "%codexPartner.category%"
       },
       {
         "command": "codexPartner.searchAndCopyReference",
-        "title": "搜索并复制引用",
-        "category": "Codex Partner"
+        "title": "%codexPartner.commands.searchAndCopyReference%",
+        "category": "%codexPartner.category%"
       },
       {
         "command": "codexPartner.openKeybindings",
-        "title": "打开 Codex Partner 快捷键设置",
-        "category": "Codex Partner"
+        "title": "%codexPartner.commands.openKeybindings%",
+        "category": "%codexPartner.category%"
       }
     ],
     "keybindings": [
@@ -102,6 +103,6 @@
     }
   },
   "scripts": {
-    "check": "node --check extension.js && node --check src/editor-reference.js && node --check src/reference-format.js && node --check src/reference-search.js && node --test test/*.test.js"
+    "check": "node --check extension.js && node --check src/editor-reference.js && node --check src/localization.js && node --check src/reference-format.js && node --check src/reference-search.js && node --test test/*.test.js"
   }
 }

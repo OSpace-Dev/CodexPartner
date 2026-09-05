@@ -1,0 +1,10 @@
+{
+  "codexPartner.displayName": "Codex Partner",
+  "codexPartner.description": "为官方 Codex VS Code 扩展生成工作区相对的文件、目录和行号引用。",
+  "codexPartner.category": "Codex Partner",
+  "codexPartner.commands.copySelectionReference": "复制 Codex 文件行号引用",
+  "codexPartner.commands.copyFileReference": "复制 Codex 文件引用",
+  "codexPartner.commands.copyDirectoryReference": "复制 Codex 目录引用",
+  "codexPartner.commands.searchAndCopyReference": "搜索并复制引用",
+  "codexPartner.commands.openKeybindings": "打开 Codex Partner 快捷键设置"
+}

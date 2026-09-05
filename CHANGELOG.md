@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 - 2026-09-05
+
+- Add VS Code localization support with English as the default language and Simplified Chinese translations.
+- Localize command titles, Quick Pick labels, notifications, errors, and generated workspace references.
+- Update the Marketplace README with English-first product documentation.
+- Optimize the Marketplace icon to reduce the extension package size.
+
 ## 0.4.0 - 2026-08-30
 
 - Add a unified Quick Pick for searching and copying workspace file or directory references.

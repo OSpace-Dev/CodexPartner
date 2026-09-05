@@ -11,6 +11,7 @@ const {
   prioritizeReferenceEntries,
   updateRecentReferenceKeys,
 } = require("./src/reference-search");
+const { getReferenceLocale } = require("./src/localization");
 
 const selectionCommand = "codexPartner.copySelectionReference";
 const fileCommand = "codexPartner.copyFileReference";
@@ -46,6 +47,10 @@ function activate(context) {
   );
 }
 
+function t(message, ...args) {
+  return vscode.l10n.t(message, ...args);
+}
+
 async function openKeybindingsSettings() {
   try {
     await vscode.commands.executeCommand(
@@ -54,7 +59,9 @@ async function openKeybindingsSettings() {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    vscode.window.showErrorMessage(`无法打开 Codex Partner 快捷键设置：${message}`);
+    vscode.window.showErrorMessage(
+      t("Unable to open Codex Partner keyboard shortcut settings: {0}", message),
+    );
   }
 }
 
@@ -63,13 +70,13 @@ class SelectionReferenceCodeActionProvider {
     if (document.uri.scheme !== "file" || !getSelectionLineRange(range)) return [];
 
     const action = new vscode.CodeAction(
-      "复制 Codex 文件行号引用",
+      t("Copy Codex file line reference"),
       vscode.CodeActionKind.QuickFix,
     );
     action.isPreferred = true;
     action.command = {
       command: selectionCommand,
-      title: "复制 Codex 文件行号引用",
+      title: t("Copy Codex file line reference"),
       arguments: [document.uri, range],
     };
     return [action];
@@ -85,11 +92,12 @@ async function copySelectionReference(documentUri, selectionRange) {
     const range = selectionRange ?? editor?.selection;
     const lineRange = getSelectionLineRange(range);
     if (!document || document.uri.scheme !== "file" || !lineRange) {
-      throw new Error("请先在已保存的文件中选择一段文本。");
+      throw new Error(t("Please select text in a saved file first."));
     }
 
+    const locale = getReferenceLocale(vscode.env.language);
     const text = formatReferenceForUri(document.uri, (relativePath) => (
-      formatFileRangeReference({ path: relativePath, ...lineRange })
+      formatFileRangeReference({ path: relativePath, ...lineRange, locale })
     ));
     await copyReference(text);
   } catch (error) {
@@ -100,14 +108,17 @@ async function copySelectionReference(documentUri, selectionRange) {
 async function copyFileReference(resourceUri) {
   try {
     const uri = resourceUri ?? vscode.window.activeTextEditor?.document.uri;
-    const fileUri = await requireWorkspaceUri(uri, "文件");
+    const fileUri = await requireWorkspaceUri(uri, "file");
     const stat = await vscode.workspace.fs.stat(fileUri);
     if (stat.type & vscode.FileType.Directory) {
-      throw new Error("当前资源是目录，请使用“复制 Codex 目录引用”。");
+      throw new Error(
+        t("The current resource is a directory. Use \"Copy Codex directory reference\" instead."),
+      );
     }
 
+    const locale = getReferenceLocale(vscode.env.language);
     const text = formatReferenceForUri(fileUri, (relativePath) => (
-      formatFileReference(relativePath)
+      formatFileReference(relativePath, locale)
     ));
     await copyReference(text);
   } catch (error) {
@@ -117,14 +128,17 @@ async function copyFileReference(resourceUri) {
 
 async function copyDirectoryReference(resourceUri) {
   try {
-    const directoryUri = await requireWorkspaceUri(resourceUri, "目录");
+    const directoryUri = await requireWorkspaceUri(resourceUri, "directory");
     const stat = await vscode.workspace.fs.stat(directoryUri);
     if (!(stat.type & vscode.FileType.Directory)) {
-      throw new Error("当前资源不是目录，请使用“复制 Codex 文件引用”。");
+      throw new Error(
+        t("The current resource is not a directory. Use \"Copy Codex file reference\" instead."),
+      );
     }
 
+    const locale = getReferenceLocale(vscode.env.language);
     const text = formatReferenceForUri(directoryUri, (relativePath) => (
-      formatDirectoryReference(relativePath)
+      formatDirectoryReference(relativePath, locale)
     ));
     await copyReference(text);
   } catch (error) {
@@ -136,7 +150,7 @@ async function searchAndCopyReference(context) {
   try {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders?.length) {
-      throw new Error("请先打开一个 VS Code 工作区。");
+      throw new Error(t("Please open a VS Code workspace first."));
     }
 
     const recentKeys = context.workspaceState.get(recentReferencesStateKey, []);
@@ -145,16 +159,19 @@ async function searchAndCopyReference(context) {
       {
         matchOnDescription: true,
         matchOnDetail: true,
-        placeHolder: "搜索工作区文件或目录",
-        title: "Codex Partner: 搜索并复制引用",
+        placeHolder: t("Search workspace files or directories"),
+        title: t("Codex Partner: Search and copy reference"),
       },
     );
     if (!selectedItem) return;
 
+    const locale = getReferenceLocale(vscode.env.language);
     const text = selectedItem.entry.kind === "directory"
-      ? formatDirectoryReference(selectedItem.entry.referencePath)
-      : formatFileReference(selectedItem.entry.referencePath);
-    if (!text) throw new Error("无法生成所选资源的工作区引用。");
+      ? formatDirectoryReference(selectedItem.entry.referencePath, locale)
+      : formatFileReference(selectedItem.entry.referencePath, locale);
+    if (!text) {
+      throw new Error(t("Unable to generate a workspace reference for the selected resource."));
+    }
 
     await copyReference(text);
     await context.workspaceState.update(
@@ -197,13 +214,15 @@ async function loadReferenceQuickPickItems(workspaceFolders, recentKeys) {
   );
 
   if (!entries.length) {
-    throw new Error("当前工作区中没有可引用的文件或目录。");
+    throw new Error(t("No referenceable files or directories found in the current workspace."));
   }
 
   return entries.map((entry) => ({
     label: entry.label,
     description: entry.description || undefined,
-    detail: `${entry.recent ? "最近引用 · " : ""}${entry.kind === "directory" ? "目录" : "文件"} · ${entry.referencePath}`,
+    detail: `${entry.recent ? `${t("Recently used")} · ` : ""}${
+      entry.kind === "directory" ? t("Directory") : t("File")
+    } · ${entry.referencePath}`,
     iconPath: new vscode.ThemeIcon(entry.kind === "directory" ? "folder" : "file"),
     entry,
   }));
@@ -222,22 +241,23 @@ function getRelativeWorkspacePath(workspaceFolder, uri) {
 function formatReferenceForUri(uri, formatter) {
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
   if (!workspaceFolder) {
-    throw new Error("请先打开包含该资源的 VS Code 工作区。");
+    throw new Error(t("Please open a VS Code workspace containing this resource."));
   }
 
   const relativePath = nodePath.relative(workspaceFolder.uri.fsPath, uri.fsPath);
   if (!relativePath || relativePath.startsWith("..") || nodePath.isAbsolute(relativePath)) {
-    throw new Error("该资源不在当前工作区内。");
+    throw new Error(t("This resource is outside the current workspace."));
   }
 
   const text = formatter(relativePath.split(nodePath.sep).join("/"));
-  if (!text) throw new Error("无法生成该资源的工作区引用。");
+  if (!text) throw new Error(t("Unable to generate a workspace reference for this resource."));
   return text;
 }
 
-async function requireWorkspaceUri(uri, resourceLabel) {
+async function requireWorkspaceUri(uri, resourceKind) {
   if (!uri || uri.scheme !== "file") {
-    throw new Error(`请从工作区资源管理器中选择一个${resourceLabel}。`);
+    const resourceLabel = resourceKind === "directory" ? t("Workspace directory") : t("Workspace file");
+    throw new Error(t("Select a {0} from the workspace Explorer.", resourceLabel));
   }
   await vscode.workspace.fs.stat(uri);
   return uri;
@@ -245,12 +265,12 @@ async function requireWorkspaceUri(uri, resourceLabel) {
 
 async function copyReference(text) {
   await vscode.env.clipboard.writeText(text);
-  vscode.window.showInformationMessage(`已复制 Codex 引用：${text}`);
+  vscode.window.showInformationMessage(t("Copied Codex reference: {0}", text));
 }
 
 function showReferenceError(error) {
   const message = error instanceof Error ? error.message : String(error);
-  vscode.window.showErrorMessage(`无法复制 Codex 引用：${message}`);
+  vscode.window.showErrorMessage(t("Unable to copy Codex reference: {0}", message));
 }
 
 module.exports = {

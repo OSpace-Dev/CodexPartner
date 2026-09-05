@@ -10,7 +10,7 @@ test("createSelectionReference formats a workspace-relative single-line referenc
       startLine: 12,
       endLine: 12,
     }),
-    "请查看文件 `src/extension.js` 的第 12 行。",
+    "Please inspect file `src/extension.js`, line 12.",
   );
 });
 
@@ -21,6 +21,19 @@ test("createSelectionReference formats a multi-line reference", () => {
       workspaceRoot: "workspace",
       startLine: 3,
       endLine: 7,
+    }),
+    "Please inspect file `README.md`, lines 3-7.",
+  );
+});
+
+test("createSelectionReference supports simplified Chinese output", () => {
+  assert.equal(
+    createSelectionReference({
+      filePath: "workspace\\README.md",
+      workspaceRoot: "workspace",
+      startLine: 3,
+      endLine: 7,
+      locale: "zh-cn",
     }),
     "请查看文件 `README.md` 的第 3-7 行。",
   );

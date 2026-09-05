@@ -1,6 +1,12 @@
 const path = require("node:path");
 
-function createSelectionReference({ filePath, workspaceRoot, startLine, endLine }) {
+function createSelectionReference({
+  filePath,
+  workspaceRoot,
+  startLine,
+  endLine,
+  locale = "en",
+}) {
   if (!filePath || !Number.isInteger(startLine) || !Number.isInteger(endLine)) return null;
   if (startLine < 1 || endLine < startLine) return null;
 
@@ -11,11 +17,13 @@ function createSelectionReference({ filePath, workspaceRoot, startLine, endLine 
     ? relativePath
     : path.basename(filePath);
   const normalizedPath = displayPath.split(path.sep).join("/");
-  const lineLabel = startLine === endLine
-    ? `第 ${startLine} 行`
-    : `第 ${startLine}-${endLine} 行`;
+  const lineLabel = locale === "zh-cn"
+    ? (startLine === endLine ? `第 ${startLine} 行` : `第 ${startLine}-${endLine} 行`)
+    : (startLine === endLine ? `line ${startLine}` : `lines ${startLine}-${endLine}`);
 
-  return `请查看文件 \`${normalizedPath}\` 的${lineLabel}。`;
+  return locale === "zh-cn"
+    ? `请查看文件 \`${normalizedPath}\` 的${lineLabel}。`
+    : `Please inspect file \`${normalizedPath}\`, ${lineLabel}.`;
 }
 
 function getSelectionLineRange(range) {

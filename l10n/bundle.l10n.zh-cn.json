@@ -1,0 +1,23 @@
+{
+  "Unable to open Codex Partner keyboard shortcut settings: {0}": "无法打开 Codex Partner 快捷键设置：{0}",
+  "Copy Codex file line reference": "复制 Codex 文件行号引用",
+  "Please select text in a saved file first.": "请先在已保存的文件中选择一段文本。",
+  "The current resource is a directory. Use \"Copy Codex directory reference\" instead.": "当前资源是目录，请改用“复制 Codex 目录引用”。",
+  "The current resource is not a directory. Use \"Copy Codex file reference\" instead.": "当前资源不是目录，请改用“复制 Codex 文件引用”。",
+  "Please open a VS Code workspace first.": "请先打开一个 VS Code 工作区。",
+  "Search workspace files or directories": "搜索工作区文件或目录",
+  "Codex Partner: Search and copy reference": "Codex Partner：搜索并复制引用",
+  "Unable to generate a workspace reference for the selected resource.": "无法生成所选资源的工作区引用。",
+  "No referenceable files or directories found in the current workspace.": "当前工作区中没有可引用的文件或目录。",
+  "Recently used": "最近引用",
+  "Directory": "目录",
+  "File": "文件",
+  "Please open a VS Code workspace containing this resource.": "请先打开包含该资源的 VS Code 工作区。",
+  "This resource is outside the current workspace.": "该资源不在当前工作区内。",
+  "Unable to generate a workspace reference for this resource.": "无法生成该资源的工作区引用。",
+  "Select a {0} from the workspace Explorer.": "请从工作区资源管理器中选择一个{0}。",
+  "Workspace file": "文件",
+  "Workspace directory": "目录",
+  "Copied Codex reference: {0}": "已复制 Codex 引用：{0}",
+  "Unable to copy Codex reference: {0}": "无法复制 Codex 引用：{0}"
+}

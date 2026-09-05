@@ -1,0 +1,23 @@
+{
+  "Unable to open Codex Partner keyboard shortcut settings: {0}": "Unable to open Codex Partner keyboard shortcut settings: {0}",
+  "Copy Codex file line reference": "Copy Codex file line reference",
+  "Please select text in a saved file first.": "Please select text in a saved file first.",
+  "The current resource is a directory. Use \"Copy Codex directory reference\" instead.": "The current resource is a directory. Use \"Copy Codex directory reference\" instead.",
+  "The current resource is not a directory. Use \"Copy Codex file reference\" instead.": "The current resource is not a directory. Use \"Copy Codex file reference\" instead.",
+  "Please open a VS Code workspace first.": "Please open a VS Code workspace first.",
+  "Search workspace files or directories": "Search workspace files or directories",
+  "Codex Partner: Search and copy reference": "Codex Partner: Search and copy reference",
+  "Unable to generate a workspace reference for the selected resource.": "Unable to generate a workspace reference for the selected resource.",
+  "No referenceable files or directories found in the current workspace.": "No referenceable files or directories found in the current workspace.",
+  "Recently used": "Recently used",
+  "Directory": "Directory",
+  "File": "File",
+  "Please open a VS Code workspace containing this resource.": "Please open a VS Code workspace containing this resource.",
+  "This resource is outside the current workspace.": "This resource is outside the current workspace.",
+  "Unable to generate a workspace reference for this resource.": "Unable to generate a workspace reference for this resource.",
+  "Select a {0} from the workspace Explorer.": "Select a {0} from the workspace Explorer.",
+  "Workspace file": "Workspace file",
+  "Workspace directory": "Workspace directory",
+  "Copied Codex reference: {0}": "Copied Codex reference: {0}",
+  "Unable to copy Codex reference: {0}": "Unable to copy Codex reference: {0}"
+}
