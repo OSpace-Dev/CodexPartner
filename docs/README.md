@@ -12,3 +12,5 @@
 - [Marketplace 发布准备](deployments/2026-08-30-001-marketplace-release-preparation.md)
 - [扩展国际化与 Marketplace 文案准备](deployments/2026-09-05-001-extension-localization.md)
 - [命令执行限制排查记录](investigations/2026-09-05-001-command-execution-restriction.md)
+
+- [本地内容记录面板](requirements/2026-09-13-001-prompt-notes.md)

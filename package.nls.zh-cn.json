@@ -2,6 +2,8 @@
   "codexPartner.displayName": "Codex Partner",
   "codexPartner.description": "为官方 Codex VS Code 扩展生成工作区相对的文件、目录和行号引用。",
   "codexPartner.category": "Codex Partner",
+  "codexPartner.commands.openNotes": "打开内容记录",
+  "codexPartner.views.notes": "内容记录",
   "codexPartner.commands.copySelectionReference": "复制 Codex 文件行号引用",
   "codexPartner.commands.copyFileReference": "复制 Codex 文件引用",
   "codexPartner.commands.copyDirectoryReference": "复制 Codex 目录引用",

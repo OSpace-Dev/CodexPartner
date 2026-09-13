@@ -2,6 +2,8 @@
   "codexPartner.displayName": "Codex Partner",
   "codexPartner.description": "Generate workspace-relative file, directory, and line references for the official Codex VS Code extension.",
   "codexPartner.category": "Codex Partner",
+  "codexPartner.commands.openNotes": "Open prompt notes",
+  "codexPartner.views.notes": "Prompt notes",
   "codexPartner.commands.copySelectionReference": "Copy Codex file line reference",
   "codexPartner.commands.copyFileReference": "Copy Codex file reference",
   "codexPartner.commands.copyDirectoryReference": "Copy Codex directory reference",

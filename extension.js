@@ -12,6 +12,7 @@ const {
   updateRecentReferenceKeys,
 } = require("./src/reference-search");
 const { getReferenceLocale } = require("./src/localization");
+const { PromptNotesViewProvider, notesViewId } = require("./src/prompt-notes-view");
 
 const selectionCommand = "codexPartner.copySelectionReference";
 const fileCommand = "codexPartner.copyFileReference";
@@ -21,9 +22,13 @@ const keybindingsCommand = "codexPartner.openKeybindings";
 const recentReferencesStateKey = "codexPartner.recentReferences";
 const recentReferencesLimit = 10;
 const searchFileLimit = 50000;
+const notesCommand = "codexPartner.openNotes";
 
 function activate(context) {
+  const notesProvider = new PromptNotesViewProvider(context, vscode);
   context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(notesViewId, notesProvider),
+    vscode.commands.registerCommand(notesCommand, () => vscode.commands.executeCommand("workbench.view.explorer")),
     vscode.languages.registerCodeActionsProvider(
       { scheme: "file" },
       new SelectionReferenceCodeActionProvider(),
@@ -280,5 +285,6 @@ module.exports = {
   copySelectionReference,
   formatReferenceForUri,
   openKeybindingsSettings,
+  PromptNotesViewProvider,
   searchAndCopyReference,
 };

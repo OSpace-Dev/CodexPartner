@@ -2,7 +2,7 @@
   "name": "codex-partner",
   "displayName": "%codexPartner.displayName%",
   "description": "%codexPartner.description%",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "icon": "media/icon.png",
   "publisher": "OSpace-Dev",
   "license": "MIT",
@@ -28,6 +28,8 @@
     "Other"
   ],
   "activationEvents": [
+    "onView:codexPartner.notesView",
+    "onCommand:codexPartner.openNotes",
     "onCommand:codexPartner.copySelectionReference",
     "onCommand:codexPartner.copyFileReference",
     "onCommand:codexPartner.copyDirectoryReference",
@@ -38,6 +40,11 @@
   "l10n": "./l10n",
   "contributes": {
     "commands": [
+      {
+        "command": "codexPartner.openNotes",
+        "title": "%codexPartner.commands.openNotes%",
+        "category": "%codexPartner.category%"
+      },
       {
         "command": "codexPartner.copySelectionReference",
         "title": "%codexPartner.commands.copySelectionReference%",
@@ -64,6 +71,15 @@
         "category": "%codexPartner.category%"
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "codexPartner.notesView",
+          "name": "%codexPartner.views.notes%"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "codexPartner.copySelectionReference",
@@ -103,6 +119,6 @@
     }
   },
   "scripts": {
-    "check": "node --check extension.js && node --check src/editor-reference.js && node --check src/localization.js && node --check src/reference-format.js && node --check src/reference-search.js && node --test test/*.test.js"
+    "check": "node --check extension.js && node --check src/editor-reference.js && node --check src/localization.js && node --check src/reference-format.js && node --check src/reference-search.js && node --check src/notes-state.js && node --check src/prompt-notes-view.js && node --check media/notes-view.js && node --test test/*.test.js"
   }
 }
