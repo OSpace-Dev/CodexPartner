@@ -20,3 +20,11 @@ test("notes state removes one note without mutating the input", () => {
   assert.deepEqual(next, []);
   assert.equal(notes.length, 1);
 });
+
+test("notes state preserves content beyond the former UI character limit", () => {
+  const content = "x".repeat(25000);
+  const [note] = addNote([], content, 1, "long-note");
+
+  assert.equal(note.content.length, content.length);
+  assert.equal(note.content, content);
+});

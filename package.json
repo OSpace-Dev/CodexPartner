@@ -2,7 +2,7 @@
   "name": "codex-partner",
   "displayName": "%codexPartner.displayName%",
   "description": "%codexPartner.description%",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "icon": "media/icon.png",
   "publisher": "OSpace-Dev",
   "license": "MIT",
@@ -71,8 +71,17 @@
         "category": "%codexPartner.category%"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codexPartner",
+          "title": "%codexPartner.displayName%",
+          "icon": "media/activitybar.svg"
+        }
+      ]
+    },
     "views": {
-      "explorer": [
+      "codexPartner": [
         {
           "type": "webview",
           "id": "codexPartner.notesView",

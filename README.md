@@ -7,8 +7,10 @@ Codex Partner is a lightweight VS Code extension that turns workspace files, dir
 - Copy a selected file range from the editor context menu, Code Action, or keyboard shortcut.
 - Copy a file or directory reference from the Explorer context menu.
 - Search workspace files and directories from one Quick Pick, with recently used references shown first.
+- Open the dedicated Codex Partner Activity Bar view to keep local prompt notes without creating or sending a Codex conversation.
+- Resize the prompt composer from its top edge and open Codex Partner keyboard shortcut settings directly from the panel.
 - Keep copied references workspace-relative. The extension never copies selected source text or reads Codex credentials.
-- Follow the VS Code display language: English is the default, with Simplified Chinese available for `zh-cn`.
+- Follow the VS Code display language across commands and the prompt-notes panel: English is the default, with Simplified Chinese available for `zh-cn`.
 
 ## Reference format
 
@@ -31,7 +33,8 @@ When VS Code is set to Simplified Chinese, the copied reference uses the corresp
 1. Select text in an editor, then choose **Copy Codex file line reference** from the lightbulb or context menu.
 2. Right-click a file or directory in the Explorer and choose the matching copy command.
 3. Run **Codex Partner: Search and copy reference** to find a file, directory, or parent path.
-4. Paste the copied reference into the official Codex extension chat.
+4. Click the Codex Partner Activity Bar icon to open the local prompt-notes panel.
+5. Paste copied references or saved notes into the official Codex extension chat when needed.
 
 ## Keyboard shortcuts
 
@@ -45,4 +48,4 @@ Search for `Codex Partner` in **Keyboard Shortcuts** to change or disable the de
 
 Codex Partner 是一个轻量 VS Code 扩展，可将工作区文件、目录和选中文本转换为可粘贴到官方 Codex VS Code 扩展聊天框的上下文引用。
 
-扩展默认使用英文界面；当 VS Code 显示语言为简体中文（`zh-cn`）时，命令、通知、搜索界面和生成的引用会使用中文。功能范围和快捷键与英文界面一致。
+扩展提供独立的 Activity Bar 入口和本地内容记录面板，可保存、复制和删除准备发送给 Codex 的内容，但不会自动创建会话或发送消息。扩展默认使用英文界面；当 VS Code 显示语言为简体中文（`zh-cn`）时，命令、通知、搜索界面、内容记录面板和生成的引用会使用中文。功能范围和快捷键与英文界面一致。

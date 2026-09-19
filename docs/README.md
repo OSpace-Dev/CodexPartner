@@ -11,6 +11,13 @@
 - [轻量上下文引用人工验收](testing/2026-08-29-002-lightweight-context-reference.md)
 - [Marketplace 发布准备](deployments/2026-08-30-001-marketplace-release-preparation.md)
 - [扩展国际化与 Marketplace 文案准备](deployments/2026-09-05-001-extension-localization.md)
+- [Codex Partner 0.7.0 VSIX 打包记录](deployments/2026-09-19-001-codex-partner-0.7.0.md)
 - [命令执行限制排查记录](investigations/2026-09-05-001-command-execution-restriction.md)
 
 - [本地内容记录面板](requirements/2026-09-13-001-prompt-notes.md)
+- [Activity Bar 独立入口评审](reviews/2026-09-19-001-activity-bar-entry.md)
+- [输入区圆角与内嵌信息评审](reviews/2026-09-19-002-rounded-composer.md)
+- [内容记录面板国际化与控件评审](reviews/2026-09-19-003-localized-notes-panel.md)
+- [Activity Bar 独立入口测试与人工验收](testing/2026-09-19-001-activity-bar-entry.md)
+- [输入区圆角与内嵌信息测试](testing/2026-09-19-002-rounded-composer.md)
+- [内容记录面板国际化与控件测试](testing/2026-09-19-003-localized-notes-panel.md)

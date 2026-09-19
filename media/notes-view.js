@@ -1,13 +1,21 @@
 const vscode = acquireVsCodeApi();
+const strings = JSON.parse(document.body.dataset.l10n || "{}");
+const locale = document.documentElement.lang || undefined;
+const composerMinHeight = 82;
+const composerMaxHeight = 180;
+const composerDefaultHeight = 82;
+const composerResizeStep = 8;
 const composer = document.getElementById("composer");
 const content = document.getElementById("content");
-const count = document.getElementById("count");
+const resizeHandle = document.getElementById("resize-handle");
 const save = document.getElementById("save");
 const clear = document.getElementById("clear");
+const keybindings = document.getElementById("keybindings");
 const total = document.getElementById("total");
 const notes = document.getElementById("notes");
 const toast = document.getElementById("toast");
 let clearArmed = false;
+let resizeSession;
 let toastTimer;
 
 function createIcon(name) {
@@ -21,7 +29,7 @@ function createIcon(name) {
 }
 
 function formatTime(timestamp) {
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(locale, {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
@@ -29,11 +37,37 @@ function formatTime(timestamp) {
   }).format(new Date(timestamp));
 }
 
+function formatMessage(message, ...values) {
+  return message.replace(/\{(\d+)\}/g, (placeholder, index) => (
+    Number(index) < values.length ? String(values[Number(index)]) : placeholder
+  ));
+}
+
+function updateViewState(changes) {
+  vscode.setState({ ...(vscode.getState() || {}), ...changes });
+}
+
+function applyComposerHeight(height) {
+  const numericHeight = Number(height);
+  const nextHeight = Math.min(
+    composerMaxHeight,
+    Math.max(
+      composerMinHeight,
+      Number.isFinite(numericHeight) ? Math.round(numericHeight) : composerDefaultHeight,
+    ),
+  );
+  content.style.height = `${nextHeight}px`;
+  resizeHandle.setAttribute("aria-valuenow", String(nextHeight));
+  return nextHeight;
+}
+
+function saveComposerHeight() {
+  updateViewState({ composerHeight: Math.round(content.getBoundingClientRect().height) });
+}
+
 function updateComposer() {
-  const length = content.value.length;
-  count.textContent = `${length} / 20000`;
   save.disabled = !content.value.trim();
-  vscode.setState({ draft: content.value });
+  updateViewState({ draft: content.value });
 }
 
 function showToast(message) {
@@ -63,15 +97,15 @@ function createNote(note) {
   copy.className = "copy-button";
   copy.type = "button";
   copy.dataset.copy = note.id;
-  copy.title = "复制这条内容";
-  copy.append(createIcon("copy"), document.createTextNode("复制"));
+  copy.title = strings.copyNote;
+  copy.append(createIcon("copy"), document.createTextNode(strings.copy));
 
   const remove = document.createElement("button");
   remove.className = "icon-button danger";
   remove.type = "button";
   remove.dataset.remove = note.id;
-  remove.title = "删除这条记录";
-  remove.setAttribute("aria-label", "删除这条记录");
+  remove.title = strings.deleteNote;
+  remove.setAttribute("aria-label", strings.deleteNote);
   remove.append(createIcon("trash"));
 
   actions.append(copy, remove);
@@ -81,12 +115,12 @@ function createNote(note) {
 }
 
 function render(items) {
-  total.textContent = `${items.length} 条记录`;
+  total.textContent = formatMessage(strings.recordCount, items.length);
   clear.disabled = items.length === 0;
   clearArmed = false;
   clear.classList.remove("confirm");
-  clear.title = "清空全部记录";
-  clear.setAttribute("aria-label", "清空全部记录");
+  clear.title = strings.clearAll;
+  clear.setAttribute("aria-label", strings.clearAll);
   notes.replaceChildren();
 
   if (items.length) {
@@ -97,14 +131,16 @@ function render(items) {
   const empty = document.createElement("div");
   empty.className = "empty-state";
   const title = document.createElement("strong");
-  title.textContent = "暂无记录";
+  title.textContent = strings.emptyTitle;
   const description = document.createElement("span");
-  description.textContent = "保存的内容会显示在这里";
+  description.textContent = strings.emptyDescription;
   empty.append(createIcon("history"), title, description);
   notes.append(empty);
 }
 
-content.value = vscode.getState()?.draft || "";
+const initialViewState = vscode.getState() || {};
+content.value = initialViewState.draft || "";
+applyComposerHeight(initialViewState.composerHeight);
 updateComposer();
 content.addEventListener("input", updateComposer);
 content.addEventListener("keydown", (event) => {
@@ -112,6 +148,52 @@ content.addEventListener("keydown", (event) => {
   event.preventDefault();
   if (!content.value.trim()) return;
   composer.requestSubmit();
+});
+
+resizeHandle.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0) return;
+  resizeSession = {
+    pointerId: event.pointerId,
+    startHeight: content.getBoundingClientRect().height,
+    startY: event.clientY,
+  };
+  resizeHandle.setPointerCapture(event.pointerId);
+  resizeHandle.classList.add("active");
+  document.body.classList.add("resizing-composer");
+  event.preventDefault();
+});
+
+resizeHandle.addEventListener("pointermove", (event) => {
+  if (!resizeSession || event.pointerId !== resizeSession.pointerId) return;
+  applyComposerHeight(
+    resizeSession.startHeight + resizeSession.startY - event.clientY,
+  );
+});
+
+function finishComposerResize(event) {
+  if (!resizeSession || event.pointerId !== resizeSession.pointerId) return;
+  resizeHandle.classList.remove("active");
+  document.body.classList.remove("resizing-composer");
+  saveComposerHeight();
+  resizeSession = undefined;
+}
+
+resizeHandle.addEventListener("pointerup", finishComposerResize);
+resizeHandle.addEventListener("pointercancel", finishComposerResize);
+resizeHandle.addEventListener("lostpointercapture", finishComposerResize);
+resizeHandle.addEventListener("keydown", (event) => {
+  const currentHeight = content.getBoundingClientRect().height;
+  let nextHeight;
+
+  if (event.key === "ArrowUp") nextHeight = currentHeight + composerResizeStep;
+  if (event.key === "ArrowDown") nextHeight = currentHeight - composerResizeStep;
+  if (event.key === "Home") nextHeight = composerMinHeight;
+  if (event.key === "End") nextHeight = composerMaxHeight;
+  if (nextHeight === undefined) return;
+
+  event.preventDefault();
+  applyComposerHeight(nextHeight);
+  saveComposerHeight();
 });
 
 composer.addEventListener("submit", (event) => {
@@ -123,18 +205,22 @@ composer.addEventListener("submit", (event) => {
   content.focus();
 });
 
+keybindings.addEventListener("click", () => {
+  vscode.postMessage({ type: "openKeybindings" });
+});
+
 clear.addEventListener("click", () => {
   if (!clearArmed) {
     clearArmed = true;
     clear.classList.add("confirm");
-    clear.title = "再次点击确认清空";
-    clear.setAttribute("aria-label", "再次点击确认清空全部记录");
-    showToast("再次点击垃圾桶以清空全部记录");
+    clear.title = strings.confirmClear;
+    clear.setAttribute("aria-label", strings.confirmClearAll);
+    showToast(strings.confirmClearToast);
     window.setTimeout(() => {
       clearArmed = false;
       clear.classList.remove("confirm");
-      clear.title = "清空全部记录";
-      clear.setAttribute("aria-label", "清空全部记录");
+      clear.title = strings.clearAll;
+      clear.setAttribute("aria-label", strings.clearAll);
     }, 3000);
     return;
   }
@@ -152,12 +238,12 @@ notes.addEventListener("click", (event) => {
 
   if (!button.classList.contains("confirm")) {
     button.classList.add("confirm");
-    button.title = "再次点击确认删除";
-    button.setAttribute("aria-label", "再次点击确认删除这条记录");
+    button.title = strings.confirmDelete;
+    button.setAttribute("aria-label", strings.confirmDeleteNote);
     window.setTimeout(() => {
       button.classList.remove("confirm");
-      button.title = "删除这条记录";
-      button.setAttribute("aria-label", "删除这条记录");
+      button.title = strings.deleteNote;
+      button.setAttribute("aria-label", strings.deleteNote);
     }, 3000);
     return;
   }
@@ -172,10 +258,10 @@ window.addEventListener("message", (event) => {
     );
     if (button) {
       button.classList.add("copied");
-      button.replaceChildren(createIcon("check"), document.createTextNode("已复制"));
+      button.replaceChildren(createIcon("check"), document.createTextNode(strings.copied));
       window.setTimeout(() => {
         button.classList.remove("copied");
-        button.replaceChildren(createIcon("copy"), document.createTextNode("复制"));
+        button.replaceChildren(createIcon("copy"), document.createTextNode(strings.copy));
       }, 1500);
     }
   }
