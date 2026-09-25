@@ -19,6 +19,8 @@ const {
 } = require("./src/prompt-notes-view");
 
 const selectionCommand = "codexPartner.copySelectionReference";
+const addSelectionCommand = "codexPartner.addSelectionReference";
+const copySelectionOnlyCommand = "codexPartner.copySelectionReferenceOnly";
 const fileCommand = "codexPartner.copyFileReference";
 const directoryCommand = "codexPartner.copyDirectoryReference";
 const searchCommand = "codexPartner.searchAndCopyReference";
@@ -59,6 +61,12 @@ function activate(context) {
       { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] },
     ),
     vscode.commands.registerCommand(selectionCommand, (documentUri, selectionRange) => (
+      addSelectionReference(notesProvider, documentUri, selectionRange)
+    )),
+    vscode.commands.registerCommand(addSelectionCommand, (documentUri, selectionRange) => (
+      addSelectionReference(notesProvider, documentUri, selectionRange)
+    )),
+    vscode.commands.registerCommand(copySelectionOnlyCommand, (documentUri, selectionRange) => (
       copySelectionReference(documentUri, selectionRange)
     )),
     vscode.commands.registerCommand(fileCommand, (resourceUri) => (
@@ -104,7 +112,7 @@ class SelectionReferenceCodeActionProvider {
     );
     action.isPreferred = true;
     action.command = {
-      command: selectionCommand,
+      command: copySelectionOnlyCommand,
       title: t("Copy Codex file line reference"),
       arguments: [document.uri, range],
     };
@@ -114,24 +122,36 @@ class SelectionReferenceCodeActionProvider {
 
 async function copySelectionReference(documentUri, selectionRange) {
   try {
-    const editor = vscode.window.activeTextEditor;
-    const document = documentUri
-      ? await vscode.workspace.openTextDocument(documentUri)
-      : editor?.document;
-    const range = selectionRange ?? editor?.selection;
-    const lineRange = getSelectionLineRange(range);
-    if (!document || document.uri.scheme !== "file" || !lineRange) {
-      throw new Error(t("Please select text in a saved file first."));
-    }
-
-    const locale = getReferenceLocale(vscode.env.language);
-    const text = formatReferenceForUri(document.uri, (relativePath) => (
-      formatFileRangeReference({ path: relativePath, ...lineRange, locale })
-    ));
-    await copyReference(text);
+    await copyReference(await getSelectionReference(documentUri, selectionRange));
   } catch (error) {
     showReferenceError(error);
   }
+}
+
+async function addSelectionReference(notesProvider, documentUri, selectionRange) {
+  try {
+    const text = await getSelectionReference(documentUri, selectionRange);
+    if (!await notesProvider.appendReferenceToDraft(text)) await copyReference(text);
+  } catch (error) {
+    showReferenceError(error);
+  }
+}
+
+async function getSelectionReference(documentUri, selectionRange) {
+  const editor = vscode.window.activeTextEditor;
+  const document = documentUri
+    ? await vscode.workspace.openTextDocument(documentUri)
+    : editor?.document;
+  const range = selectionRange ?? editor?.selection;
+  const lineRange = getSelectionLineRange(range);
+  if (!document || document.uri.scheme !== "file" || !lineRange) {
+    throw new Error(t("Please select text in a saved file first."));
+  }
+
+  const locale = getReferenceLocale(vscode.env.language);
+  return formatReferenceForUri(document.uri, (relativePath) => (
+    formatFileRangeReference({ path: relativePath, ...lineRange, locale })
+  ));
 }
 
 async function copyFileReference(resourceUri) {
@@ -271,6 +291,7 @@ function showReferenceError(error) {
 
 module.exports = {
   activate,
+  addSelectionReference,
   copyDirectoryReference,
   copyFileReference,
   copySelectionReference,

@@ -711,6 +711,12 @@ notes.addEventListener("click", (event) => {
 
 window.addEventListener("message", (event) => {
   if (event.data.type === "notes") render(event.data.notes);
+  if (event.data.type === "appendReference" && typeof event.data.reference === "string") {
+    const draft = readRichText(content);
+    const separator = draft && !/\s$/u.test(draft) ? " " : "";
+    replaceRichText(content, draft + separator + event.data.reference);
+    updateComposer();
+  }
   if (event.data.type === "referencesChanged" && referenceSearch) {
     referenceSearch.loading = true;
     referenceSearch.results = [];

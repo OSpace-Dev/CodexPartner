@@ -132,6 +132,7 @@ test("rich reference bubbles are wired into the webview", () => {
   assert.match(script, /referenceSearch\.query === trigger\.query/);
   assert.match(script, /content\.setAttribute\("aria-activedescendant"/);
   assert.match(script, /event\.data\.type === "referencesChanged"/);
+  assert.match(script, /event\.data\.type === "appendReference"[\s\S]*replaceRichText\(content, draft \+ separator \+ event\.data\.reference\)/);
 
   const extension = fs.readFileSync(
     path.join(__dirname, "..", "extension.js"),
@@ -237,6 +238,33 @@ test("prompt notes can open the extension keyboard shortcut settings", async () 
 
   await provider.handleMessage({ type: "openKeybindings" });
   assert.equal(executedCommand, openKeybindingsCommand);
+});
+
+test("selection reference reaches the draft only while the notes view is ready and visible", async () => {
+  const messages = [];
+  let delivered = true;
+  const provider = new PromptNotesViewProvider(
+    { workspaceState: { get: () => [] } },
+    { l10n: { t: (message) => message } },
+  );
+  provider.view = {
+    visible: false,
+    webview: { postMessage: async (message) => {
+      messages.push(message);
+      return delivered;
+    } },
+  };
+
+  assert.equal(await provider.appendReferenceToDraft("reference"), false);
+  provider.view.visible = true;
+  assert.equal(await provider.appendReferenceToDraft("reference"), false);
+  await provider.handleMessage({ type: "ready" });
+  assert.equal(await provider.appendReferenceToDraft("reference"), true);
+  assert.deepEqual(messages.at(-1), { type: "appendReference", reference: "reference" });
+  delivered = false;
+  assert.equal(await provider.appendReferenceToDraft("reference"), false);
+  provider.view.webview.postMessage = async () => { throw new Error("Webview disposed"); };
+  assert.equal(await provider.appendReferenceToDraft("reference"), false);
 });
 
 test("prompt notes searches workspace references and returns localized raw references", async () => {

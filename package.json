@@ -31,6 +31,8 @@
     "onView:codexPartner.notesView",
     "onCommand:codexPartner.openNotes",
     "onCommand:codexPartner.copySelectionReference",
+    "onCommand:codexPartner.addSelectionReference",
+    "onCommand:codexPartner.copySelectionReferenceOnly",
     "onCommand:codexPartner.copyFileReference",
     "onCommand:codexPartner.copyDirectoryReference",
     "onCommand:codexPartner.searchAndCopyReference",
@@ -48,6 +50,16 @@
       {
         "command": "codexPartner.copySelectionReference",
         "title": "%codexPartner.commands.copySelectionReference%",
+        "category": "%codexPartner.category%"
+      },
+      {
+        "command": "codexPartner.addSelectionReference",
+        "title": "%codexPartner.commands.addSelectionReference%",
+        "category": "%codexPartner.category%"
+      },
+      {
+        "command": "codexPartner.copySelectionReferenceOnly",
+        "title": "%codexPartner.commands.copySelectionReferenceOnly%",
         "category": "%codexPartner.category%"
       },
       {
@@ -108,7 +120,7 @@
     "menus": {
       "editor/context": [
         {
-          "command": "codexPartner.copySelectionReference",
+          "command": "codexPartner.copySelectionReferenceOnly",
           "when": "editorHasSelection && resourceScheme == file",
           "group": "navigation@50"
         }

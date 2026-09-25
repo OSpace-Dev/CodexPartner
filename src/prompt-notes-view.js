@@ -66,6 +66,7 @@ class PromptNotesViewProvider {
     this.context = context;
     this.vscode = vscode;
     this.view = null;
+    this.webviewReady = false;
     this.referenceEntriesPromise = null;
     this.referenceIndexVersion = 0;
     this.createdDirectoryUris = new Map();
@@ -118,6 +119,7 @@ class PromptNotesViewProvider {
 
   resolveWebviewView(view) {
     this.view = view;
+    this.webviewReady = false;
     const mediaRoot = this.vscode.Uri.joinPath(
       this.context.extensionUri,
       "media",
@@ -157,7 +159,10 @@ class PromptNotesViewProvider {
     const notes = normalizeNotes(
       this.context.workspaceState.get(notesStateKey, []),
     );
-    if (message?.type === "ready") return this.post({ type: "notes", notes });
+    if (message?.type === "ready") {
+      this.webviewReady = true;
+      return this.post({ type: "notes", notes });
+    }
     if (message?.type === "openKeybindings") {
       return this.vscode.commands.executeCommand(openKeybindingsCommand);
     }
@@ -226,6 +231,15 @@ class PromptNotesViewProvider {
 
   post(message) {
     this.view?.webview.postMessage(message);
+  }
+
+  async appendReferenceToDraft(reference) {
+    if (!this.view?.visible || !this.webviewReady) return false;
+    try {
+      return await this.view.webview.postMessage({ type: "appendReference", reference });
+    } catch {
+      return false;
+    }
   }
 }
 

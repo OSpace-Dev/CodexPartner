@@ -4,7 +4,7 @@ Codex Partner is a lightweight VS Code extension that turns workspace files, dir
 
 ## Features
 
-- Copy a selected file range from the editor context menu, Code Action, or keyboard shortcut.
+- Copy a selected file range from the editor context menu or Code Action; use `Ctrl+Alt+C` to add it to a visible prompt-notes draft.
 - Copy a file or directory reference from the Explorer context menu.
 - Search workspace files and directories from one Quick Pick, with recently used references shown first.
 - Open the dedicated Codex Partner Activity Bar view to keep local prompt notes without creating or sending a Codex conversation.
@@ -38,7 +38,7 @@ When VS Code is set to Simplified Chinese, the copied reference uses the corresp
 
 ## Keyboard shortcuts
 
-- `Ctrl+Alt+C`: Copy a file and line reference for the current selection.
+- `Ctrl+Alt+C`: Add a file and line reference to the visible Codex Partner draft; copy it when the panel is closed.
 - `Ctrl+Alt+F`: Copy a reference for the current file when there is no selection.
 - `Ctrl+Alt+R`: Search workspace files or directories and copy the selected reference.
 
@@ -46,6 +46,6 @@ Search for `Codex Partner` in **Keyboard Shortcuts** to change or disable the de
 
 ## 中文说明
 
-Codex Partner 是一个轻量 VS Code 扩展，可将工作区文件、目录和选中文本转换为可粘贴到官方 Codex VS Code 扩展聊天框的上下文引用。
+Codex Partner 是一个轻量 VS Code 扩展，可将工作区文件、目录和选中文本转换为可粘贴到官方 Codex VS Code 扩展聊天框的上下文引用。面板可见时，选中代码后按 `Ctrl+Alt+C` 可将文件行号引用追加到输入草稿；面板未打开时仍复制到剪贴板。
 
 扩展提供独立的 Activity Bar 入口和本地内容记录面板，可保存、复制和删除准备发送给 Codex 的内容，但不会自动创建会话或发送消息。扩展默认使用英文界面；当 VS Code 显示语言为简体中文（`zh-cn`）时，命令、通知、搜索界面、内容记录面板和生成的引用会使用中文。功能范围和快捷键与英文界面一致。
