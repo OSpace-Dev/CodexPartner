@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const {
   buildReferenceSearchEntries,
   createReferenceSearchEntryKey,
+  filterReferenceEntries,
   normalizeSearchPath,
   prioritizeReferenceEntries,
   updateRecentReferenceKeys,
@@ -89,6 +90,24 @@ test("normalizes separators and removes duplicate discoveries", () => {
   assert.equal(entries.filter((entry) => entry.kind === "directory").length, 1);
 });
 
+test("includes newly created empty directories and their parents", () => {
+  const entries = buildReferenceSearchEntries([], {
+    directories: [{
+      relativePath: "notes/new folder",
+      workspaceKey: "workspace",
+      workspaceName: "workspace",
+    }],
+  });
+
+  assert.deepEqual(
+    entries.map(({ kind, referencePath }) => ({ kind, referencePath })),
+    [
+      { kind: "directory", referencePath: "notes" },
+      { kind: "directory", referencePath: "notes/new folder" },
+    ],
+  );
+});
+
 test("places recent references first in most-recent order", () => {
   const entries = buildReferenceSearchEntries([
     {
@@ -135,4 +154,39 @@ test("updates and limits recent reference keys without duplicates", () => {
     updateRecentReferenceKeys(["b", "c", "d"], "a", 3),
     ["a", "b", "c"],
   );
+});
+
+test("filters reference entries by label and path with a bounded result set", () => {
+  const entries = buildReferenceSearchEntries([
+    {
+      relativePath: "src/components/button.js",
+      workspaceKey: "workspace",
+      workspaceName: "workspace",
+    },
+    {
+      relativePath: "src/components/input.js",
+      workspaceKey: "workspace",
+      workspaceName: "workspace",
+    },
+  ]);
+
+  assert.deepEqual(
+    filterReferenceEntries(entries, "button").map(({ kind, referencePath }) => ({
+      kind,
+      referencePath,
+    })),
+    [
+      { kind: "file", referencePath: "src/components/button.js" },
+    ],
+  );
+  assert.equal(filterReferenceEntries(entries, "", 2).length, 2);
+  assert.deepEqual(
+    filterReferenceEntries(entries, "btj").map(({ referencePath }) => referencePath),
+    ["src/components/button.js"],
+  );
+  assert.deepEqual(
+    filterReferenceEntries(entries, "scbj").map(({ referencePath }) => referencePath),
+    ["src/components/button.js"],
+  );
+  assert.deepEqual(filterReferenceEntries(entries, "zyx"), []);
 });

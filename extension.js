@@ -7,10 +7,9 @@ const {
 } = require("./src/reference-format");
 const { getSelectionLineRange } = require("./src/editor-reference");
 const {
-  buildReferenceSearchEntries,
-  prioritizeReferenceEntries,
   updateRecentReferenceKeys,
 } = require("./src/reference-search");
+const { loadReferenceSearchEntries } = require("./src/reference-search-host");
 const { getReferenceLocale } = require("./src/localization");
 const {
   PromptNotesViewProvider,
@@ -25,12 +24,31 @@ const directoryCommand = "codexPartner.copyDirectoryReference";
 const searchCommand = "codexPartner.searchAndCopyReference";
 const recentReferencesStateKey = "codexPartner.recentReferences";
 const recentReferencesLimit = 10;
-const searchFileLimit = 50000;
 const notesCommand = "codexPartner.openNotes";
 
 function activate(context) {
   const notesProvider = new PromptNotesViewProvider(context, vscode);
+  const referenceWatcher = vscode.workspace.createFileSystemWatcher("**/*");
   context.subscriptions.push(
+    notesProvider,
+    referenceWatcher,
+    referenceWatcher.onDidCreate((uri) => {
+      void notesProvider.handleReferenceCreated(uri);
+    }),
+    referenceWatcher.onDidDelete((uri) => notesProvider.handleReferenceDeleted(uri)),
+    vscode.workspace.onDidCreateFiles(({ files }) => {
+      files.forEach((uri) => { void notesProvider.handleReferenceCreated(uri); });
+    }),
+    vscode.workspace.onDidDeleteFiles(({ files }) => {
+      files.forEach((uri) => notesProvider.handleReferenceDeleted(uri));
+    }),
+    vscode.workspace.onDidRenameFiles(({ files }) => {
+      files.forEach(({ oldUri, newUri }) => {
+        notesProvider.handleReferenceDeleted(oldUri);
+        void notesProvider.handleReferenceCreated(newUri);
+      });
+    }),
+    vscode.workspace.onDidChangeWorkspaceFolders(() => notesProvider.refreshReferenceSearch()),
     vscode.window.registerWebviewViewProvider(notesViewId, notesProvider),
     vscode.commands.registerCommand(notesCommand, () => (
       vscode.commands.executeCommand(`workbench.view.extension.${notesViewContainerId}`)
@@ -166,7 +184,7 @@ async function searchAndCopyReference(context) {
 
     const recentKeys = context.workspaceState.get(recentReferencesStateKey, []);
     const selectedItem = await vscode.window.showQuickPick(
-      loadReferenceQuickPickItems(workspaceFolders, recentKeys),
+      loadReferenceQuickPickItems(recentKeys),
       {
         matchOnDescription: true,
         matchOnDetail: true,
@@ -198,31 +216,8 @@ async function searchAndCopyReference(context) {
   }
 }
 
-async function loadReferenceQuickPickItems(workspaceFolders, recentKeys) {
-  const fileUris = await vscode.workspace.findFiles(
-    "**/*",
-    undefined,
-    searchFileLimit,
-  );
-  const files = fileUris.flatMap((uri) => {
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
-    if (!workspaceFolder) return [];
-
-    const relativePath = getRelativeWorkspacePath(workspaceFolder, uri);
-    if (!relativePath) return [];
-
-    return [{
-      relativePath,
-      workspaceKey: `${workspaceFolder.index}:${workspaceFolder.name}`,
-      workspaceName: workspaceFolder.name,
-    }];
-  });
-  const entries = prioritizeReferenceEntries(
-    buildReferenceSearchEntries(files, {
-      multiRoot: workspaceFolders.length > 1,
-    }),
-    recentKeys,
-  );
+async function loadReferenceQuickPickItems(recentKeys) {
+  const entries = await loadReferenceSearchEntries(vscode, recentKeys);
 
   if (!entries.length) {
     throw new Error(t("No referenceable files or directories found in the current workspace."));
@@ -237,16 +232,6 @@ async function loadReferenceQuickPickItems(workspaceFolders, recentKeys) {
     iconPath: new vscode.ThemeIcon(entry.kind === "directory" ? "folder" : "file"),
     entry,
   }));
-}
-
-function getRelativeWorkspacePath(workspaceFolder, uri) {
-  const relativePath = workspaceFolder.uri.scheme === "file" && uri.scheme === "file"
-    ? nodePath.relative(workspaceFolder.uri.fsPath, uri.fsPath)
-    : nodePath.posix.relative(workspaceFolder.uri.path, uri.path);
-  if (!relativePath || relativePath.startsWith("..") || nodePath.isAbsolute(relativePath)) {
-    return null;
-  }
-  return relativePath.split(nodePath.sep).join("/");
 }
 
 function formatReferenceForUri(uri, formatter) {

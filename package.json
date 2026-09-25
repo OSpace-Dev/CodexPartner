@@ -128,6 +128,6 @@
     }
   },
   "scripts": {
-    "check": "node --check extension.js && node --check src/editor-reference.js && node --check src/localization.js && node --check src/reference-format.js && node --check src/reference-search.js && node --check src/notes-state.js && node --check src/prompt-notes-view.js && node --check media/notes-view.js && node --test test/*.test.js"
+    "check": "node --check extension.js && node --check src/editor-reference.js && node --check src/localization.js && node --check src/reference-format.js && node --check src/reference-search.js && node --check src/reference-search-host.js && node --check src/notes-state.js && node --check src/prompt-notes-view.js && node --check media/reference-bubbles.js && node --check media/notes-view.js && node --test test/*.test.js"
   }
 }

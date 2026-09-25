@@ -15,7 +15,7 @@ body {
   font: 13px/1.5 var(--vscode-font-family);
 }
 
-button, textarea { font: inherit; }
+button, .rich-editor { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: default; opacity: .45; }
 
@@ -142,7 +142,7 @@ h1 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: 0; }
   cursor: ns-resize !important;
   user-select: none !important;
 }
-textarea {
+.rich-editor {
   display: block;
   width: 100%;
   height: 82px;
@@ -157,8 +157,193 @@ textarea {
   outline: 0;
   line-height: 1.55;
   letter-spacing: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
-textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
+.rich-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--vscode-input-placeholderForeground);
+  pointer-events: none;
+}
+
+.reference-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  max-width: min(100%, 30rem);
+  margin: 0 2px;
+  height: 1.4em;
+  padding: 0 5px;
+  color: var(--vscode-textLink-foreground);
+  background: color-mix(in srgb, var(--vscode-textLink-foreground) 12%, transparent);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vscode-textLink-foreground) 30%, transparent);
+  /* Center the chip against surrounding glyphs, not the font's x-height. */
+  vertical-align: -0.15em;
+  line-height: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  user-select: all;
+}
+.reference-bubble .icon { flex: 0 0 1em; width: 1em; height: 1em; }
+.reference-bubble:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: 1px; }
+.reference-bubble-editable:focus-within { outline: 1px solid var(--vscode-focusBorder); outline-offset: 1px; }
+.reference-bubble-label {
+  min-width: 0;
+  font-size: .9em;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.note-content .reference-bubble { margin-inline: 0; }
+.reference-bubble-editable { padding-right: 24px; }
+.reference-bubble-remove {
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.reference-bubble-remove .icon { width: 12px; height: 12px; }
+.reference-bubble-editable:hover .reference-bubble-remove,
+.reference-bubble-editable:focus-within .reference-bubble-remove { opacity: 1; pointer-events: auto; }
+.reference-bubble-remove:hover { background: var(--vscode-toolbar-hoverBackground); }
+.reference-bubble-remove:focus-visible { outline: 1px solid var(--vscode-focusBorder); }
+.reference-tooltip {
+  --reference-tooltip-background: var(--vscode-editorHoverWidget-background, var(--vscode-editorWidget-background));
+  --reference-tooltip-foreground: var(--vscode-editorHoverWidget-foreground, var(--vscode-foreground));
+  --reference-tooltip-border: var(--vscode-editorHoverWidget-border, var(--vscode-widget-border));
+  position: fixed;
+  z-index: 30;
+  width: max-content;
+  max-width: min(420px, calc(100vw - 16px));
+  padding: 7px 10px;
+  color: var(--reference-tooltip-foreground);
+  background: var(--reference-tooltip-background);
+  border: 1px solid var(--reference-tooltip-border);
+  border-radius: var(--control-radius);
+  box-shadow: 0 4px 14px var(--vscode-widget-shadow);
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+.reference-tooltip::after {
+  position: absolute;
+  bottom: -5px;
+  left: var(--tooltip-arrow-left, 18px);
+  width: 8px;
+  height: 8px;
+  content: "";
+  background: var(--reference-tooltip-background);
+  border-right: 1px solid var(--reference-tooltip-border);
+  border-bottom: 1px solid var(--reference-tooltip-border);
+  transform: translateX(-50%) rotate(45deg);
+}
+body.vscode-dark .reference-tooltip,
+body.vscode-high-contrast .reference-tooltip {
+  --reference-tooltip-background: #fff;
+  --reference-tooltip-foreground: #1f1f1f;
+  --reference-tooltip-border: #d4d4d4;
+}
+.reference-tooltip[hidden] { display: none; }
+
+.reference-picker {
+  position: fixed;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(360px, calc(100vw - 16px));
+  height: min(240px, calc(100vh - 16px));
+  max-height: none;
+  padding: 4px;
+  color: var(--vscode-quickInput-foreground, var(--vscode-foreground));
+  background: var(--vscode-quickInput-background, var(--vscode-editorWidget-background));
+  border: 1px solid var(--vscode-widget-border);
+  border-radius: var(--surface-radius);
+  box-shadow: 0 8px 24px var(--vscode-widget-shadow);
+  overflow: hidden;
+}
+.reference-picker[hidden] { display: none; }
+.reference-results {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+.reference-picker-status {
+  padding: 8px 10px;
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+}
+.reference-option {
+  display: grid;
+  grid-template-columns: var(--icon-size) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--control-radius);
+  line-height: 1.3;
+}
+.reference-option:hover,
+.reference-option.selected {
+  color: var(--vscode-list-activeSelectionForeground, var(--vscode-foreground));
+  background: var(--vscode-list-activeSelectionBackground, var(--vscode-toolbar-hoverBackground));
+}
+.reference-option .icon { color: var(--vscode-icon-foreground); }
+.reference-option.selected .icon { color: inherit; }
+.reference-option-text { display: flex; min-width: 0; flex-direction: column; justify-content: center; gap: 2px; }
+.reference-option-text strong {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reference-option-description {
+  overflow: hidden;
+  color: var(--vscode-descriptionForeground);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reference-option.selected .reference-option-description { color: inherit; opacity: .8; }
+.reference-option mark {
+  color: var(--vscode-list-highlightForeground, var(--vscode-textLink-foreground));
+  background: transparent;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.reference-option.selected mark { color: inherit; }
+.reference-option-kind {
+  align-self: center;
+  color: var(--vscode-descriptionForeground);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.reference-option.selected .reference-option-kind { color: inherit; opacity: .8; }
 
 button:focus-visible {
   outline: 1px solid var(--vscode-focusBorder);
